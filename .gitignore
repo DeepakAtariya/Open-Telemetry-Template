@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.log
+.env
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Local Claude state (keep template settings, ignore session-local data)
+.claude/settings.local.json
