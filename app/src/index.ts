@@ -10,6 +10,18 @@ const app = express();
 const PORT = Number(process.env.PORT ?? 3000);
 const USERS_URL = process.env.USERS_URL ?? 'http://users-service:3000';
 
+// Permissive CORS for the demo frontend. In production, restrict origin.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, traceparent, tracestate, baggage');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+  next();
+});
+
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = process.hrtime.bigint();
   inFlightRequests.add(1, { method: req.method });
