@@ -76,6 +76,38 @@ services:
       - METRICS_PORT=9464
       - OTEL_SERVICE_NAME=otel-api
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - USERS_URL=http://users-service:3000
+    depends_on:
+      - otel-collector
+      - users-service
+
+  users-service:
+    build: ./services/users-service
+    container_name: users-service
+    ports:
+      - "3002:3000"
+      - "9465:9464"
+    environment:
+      - PORT=3000
+      - METRICS_PORT=9464
+      - OTEL_SERVICE_NAME=users-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - NOTIFICATIONS_URL=http://notifications-service:3000
+    depends_on:
+      - otel-collector
+      - notifications-service
+
+  notifications-service:
+    build: ./services/notifications-service
+    container_name: notifications-service
+    ports:
+      - "3003:3000"
+      - "9466:9464"
+    environment:
+      - PORT=3000
+      - METRICS_PORT=9464
+      - OTEL_SERVICE_NAME=notifications-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
     depends_on:
       - otel-collector
 

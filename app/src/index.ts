@@ -8,6 +8,7 @@ import express, { NextFunction, Request, Response } from 'express';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 3000);
+const USERS_URL = process.env.USERS_URL ?? 'http://users-service:3000';
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = process.hrtime.bigint();
@@ -62,6 +63,34 @@ app.get('/users/:id', (req, res) => {
   }
   logger.info('user fetched', { id });
   res.json({ id, name: id === 1 ? 'Alice' : 'Bob' });
+});
+
+// Distributed-trace demo: this handler calls users-service (which itself
+// calls notifications-service). One request → one trace ID across 3 services.
+app.get('/orders/:userId', async (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!Number.isInteger(userId) || userId < 1) {
+    res.status(400).json({ error: 'invalid userId' });
+    return;
+  }
+  logger.info('building order for user', { userId });
+  try {
+    const upstream = await fetch(`${USERS_URL}/users/${userId}`);
+    if (!upstream.ok) {
+      logger.warn('users upstream non-2xx', { status: upstream.status });
+      res.status(upstream.status).json({ error: 'upstream failed' });
+      return;
+    }
+    const user = await upstream.json();
+    res.json({
+      orderId: `ord_${Date.now()}`,
+      total: 99.0,
+      user,
+    });
+  } catch (err) {
+    logger.error('order build failed', { err: String(err) });
+    res.status(502).json({ error: 'upstream unavailable' });
+  }
 });
 
 app.get('/slow', async (_req, res) => {
