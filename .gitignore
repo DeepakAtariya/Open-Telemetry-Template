@@ -7,6 +7,3 @@ dist/
 # Editor / IDE
 .vscode/
 .idea/
-
-# Local Claude state (keep template settings, ignore session-local data)
-.claude/settings.local.json

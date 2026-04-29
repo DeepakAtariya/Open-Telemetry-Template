@@ -97,6 +97,15 @@ services:
       - otel-collector
       - notifications-service
 
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - otel-api
+      - otel-collector
+
   notifications-service:
     build: ./services/notifications-service
     container_name: notifications-service
